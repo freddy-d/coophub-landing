@@ -5,44 +5,41 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import demoImg from "./prototipo.png";
 
-// CoopHub Landing – App.tsx (TS)
-// Alterações solicitadas:
-// - Removido iFrame e qualquer estado/efeito relacionado
-// - Removido link "Abrir em nova aba"
-// - Adicionado uma imagem no lugar do iFrame + botão que leva a outro link
+// CoopHub Landing – App.tsx (fix TS types)
+// - Arrays (objetivos/problemas/modulos) ficam OPCIONAIS no schema (sem .default())
+// - Mantemos defaultValues: [] para não quebrar o runtime
+// - Campos removidos: numCooperados, tempoImplantacao, aceitaBeta, faixaPreco
+// - Textos opcionais + aviso no topo do bloco
 
-// Config de formulário
 const SHEETS_WEBHOOK: string =
   (import.meta as any)?.env?.VITE_SHEETS_WEBHOOK ||
-  "https://script.google.com/macros/s/AKfycbzUc_25VvcxebarxCVmZdiYCZiTkErNqkqwT5glmVZ2kL3Eibj_S_LqZPYyyILNODU/exec"; // URL do Apps Script /exec
+  "https://script.google.com/macros/s/AKfycbzUc_25VvcxebarxCVmZdiYCZiTkErNqkqwT5glmVZ2kL3Eibj_S_LqZPYyyILNODU/exec";
 
-// Alvos da “demo”
-const DEMO_LINK = "https://coophub-app-demo.vercel.app/"; // <-- troque para onde o botão deve levar
+const DEMO_LINK = "https://coophub-app-demo.vercel.app/";
 const DEMO_IMG_SRC =
-  "https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=1470&auto=format&fit=crop"; // <-- troque pela imagem do seu dashboard
-
+  "https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=1470&auto=format&fit=crop";
 const DEMO_IMG_SRC_PROT = demoImg;
 
 // ===== Schema (Zod) =====
-const AceitaVals = ["Sim", "Não"] as const;
+// -> deixe objetivos/problemas/modulos APENAS como .optional() (sem .default())
+// -> tentou também opcional
 const schema = z.object({
   nome: z.string().min(2, "Informe seu nome"),
   email: z.string().email("E-mail inválido"),
   porte: z.string().min(1, "Selecione o porte"),
   setor: z.string().min(1, "Informe o setor"),
   setorOutro: z.string().optional(),
-  numCooperados: z.string().optional(),
-  tempoImplantacao: z.string().min(1, "Selecione um prazo"),
-  aceitaBeta: z.enum(AceitaVals, { message: "Selecione uma opção" }),
-  faixaPreco: z.string().min(1, "Selecione uma faixa"),
-  objetivos: z.array(z.string()).min(1, "Selecione ao menos um objetivo"),
+
+  objetivos: z.array(z.string()).optional(),
   objetivoOutro: z.string().optional(),
-  problemas: z.array(z.string()).min(1, "Selecione ao menos um problema"),
+  problemas: z.array(z.string()).optional(),
   problemaOutro: z.string().optional(),
   problemasLivre: z.string().optional(),
-  modulos: z.array(z.string()).min(1, "Selecione ao menos um módulo"),
+  modulos: z.array(z.string()).optional(),
+
   integracoes: z.string().optional(),
-  tentou: z.string().min(5, "Conte um pouco do que já tentou"),
+  tentou: z.string().optional(),
+
   consent: z.boolean().refine((v) => v === true, {
     message: "É necessário aceitar o consentimento",
   }),
@@ -105,13 +102,13 @@ export default function Landing() {
     setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    // Mesmo com schema opcional, mantemos defaults para UX.
     defaultValues: {
       objetivos: [],
       problemas: [],
       modulos: [],
-      aceitaBeta: "Sim",
       consent: false,
-    },
+    } as Partial<FormValues>,
   });
 
   const porteOpts = ["Pequena (até 300)", "Média (300–1000)", "Grande (1000+)"];
@@ -122,14 +119,6 @@ export default function Landing() {
     "Pecuária",
     "Mista",
     "Outro",
-  ];
-  const tempoOpts = ["1–3 meses", "3–6 meses", "> 6 meses"];
-  const faixaOpts = [
-    "Até R$ 49/mês",
-    "R$ 50–99/mês",
-    "R$ 100–199/mês",
-    "R$ 200–399/mês",
-    "R$ 400+/mês",
   ];
   const objetivosOpts = [
     "Operação mais estruturada",
@@ -157,9 +146,10 @@ export default function Landing() {
     "Integrações ERP/Contábil",
   ];
 
-  const objetivosSel = (watch("objetivos") as string[]) || [];
-  const problemasSel = (watch("problemas") as string[]) || [];
-  const modulosSel = (watch("modulos") as string[]) || [];
+  // Como os campos são opcionais, use fallback para []
+  const objetivosSel = watch("objetivos") ?? [];
+  const problemasSel = watch("problemas") ?? [];
+  const modulosSel = watch("modulos") ?? [];
 
   const onSubmit = async (data: FormValues) => {
     setSubmitting(true);
@@ -209,10 +199,6 @@ export default function Landing() {
         porte: "",
         setor: "",
         setorOutro: "",
-        numCooperados: "",
-        tempoImplantacao: "",
-        aceitaBeta: "Sim",
-        faixaPreco: "",
         objetivos: [],
         objetivoOutro: "",
         problemas: [],
@@ -235,7 +221,7 @@ export default function Landing() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-zinc-50 to-white text-zinc-900">
-      {/* Top bar (sem ícone) */}
+      {/* Top bar */}
       <header className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-zinc-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -295,7 +281,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Demo (imagem + botão que leva a outro link) */}
+      {/* Demo */}
       <section
         id="demo"
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16"
@@ -318,6 +304,7 @@ export default function Landing() {
           />
         </div>
       </section>
+
       {/* Formulário */}
       <section
         id="inscricao"
@@ -408,7 +395,7 @@ export default function Landing() {
                   <input
                     {...register("setorOutro")}
                     className="mt-2 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Se marcou 'Outro', qual?"
+                    placeholder="Se marcou 'Outro', qual? (opcional)"
                   />
                   {errors?.setor && (
                     <p className="mt-1 text-xs text-red-600">
@@ -417,96 +404,18 @@ export default function Landing() {
                   )}
                 </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">
-                    Nº de cooperados (aprox)
-                  </label>
-                  <input
-                    {...register("numCooperados")}
-                    className="mt-1 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="ex.: 350"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">
-                    Tempo desejado para implementar
-                  </label>
-                  <select
-                    {...register("tempoImplantacao")}
-                    className="mt-1 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                  >
-                    <option value="">Selecione</option>
-                    {tempoOpts.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                  {errors?.tempoImplantacao && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {(errors as any).tempoImplantacao.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium">
-                  Aceitaria participar do beta com feedback quinzenal?
-                </label>
-                <div className="mt-2 flex gap-4">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      value="Sim"
-                      {...register("aceitaBeta")}
-                      className="h-4 w-4"
-                    />{" "}
-                    Sim
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      value="Não"
-                      {...register("aceitaBeta")}
-                      className="h-4 w-4"
-                    />{" "}
-                    Não
-                  </label>
-                </div>
-                {errors?.aceitaBeta && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).aceitaBeta.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Valor percebido */}
-              <div>
-                <label className="text-sm font-medium">
-                  Quanto estaria disposto a pagar (faixa de preço)?
-                </label>
-                <select
-                  {...register("faixaPreco")}
-                  className="mt-1 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                >
-                  <option value="">Selecione</option>
-                  {faixaOpts.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-                {errors?.faixaPreco && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).faixaPreco.message}
-                  </p>
-                )}
-              </div>
+              {/* Aviso de campos opcionais */}
+              <p className="text-sm text-zinc-600 -mb-4">
+                As seguintes perguntas <strong>não são obrigatórias</strong>{" "}
+                (responda apenas se quiser).
+              </p>
 
+              {/* O que espera alcançar? (opcional) */}
               <div>
                 <label className="text-sm font-medium">
-                  O que você espera alcançar?
+                  O que você espera alcançar?{" "}
+                  <span className="text-zinc-500">(opcional)</span>
                 </label>
                 <div className="mt-2 grid md:grid-cols-2 gap-3">
                   {objetivosOpts.map((o) => (
@@ -514,9 +423,7 @@ export default function Landing() {
                       key={o}
                       label={o}
                       selected={objetivosSel}
-                      onToggle={(next) =>
-                        setValue("objetivos", next, { shouldValidate: true })
-                      }
+                      onToggle={(next) => setValue("objetivos", next)}
                     />
                   ))}
                 </div>
@@ -525,17 +432,13 @@ export default function Landing() {
                   className="mt-3 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Outro (opcional)"
                 />
-                {errors?.objetivos && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).objetivos.message}
-                  </p>
-                )}
               </div>
 
-              {/* Problemas */}
+              {/* Problemas (opcional) */}
               <div>
                 <label className="text-sm font-medium">
-                  Quais problemas quer evitar?
+                  Quais problemas quer evitar?{" "}
+                  <span className="text-zinc-500">(opcional)</span>
                 </label>
                 <div className="mt-2 grid md:grid-cols-2 gap-3">
                   {problemasOpts.map((p) => (
@@ -544,9 +447,7 @@ export default function Landing() {
                       label={p}
                       color="indigo"
                       selected={problemasSel}
-                      onToggle={(next) =>
-                        setValue("problemas", next, { shouldValidate: true })
-                      }
+                      onToggle={(next) => setValue("problemas", next)}
                     />
                   ))}
                 </div>
@@ -559,19 +460,15 @@ export default function Landing() {
                   {...register("problemasLivre")}
                   rows={3}
                   className="mt-3 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Conte detalhes dos problemas que quer evitar (opcional)"
+                  placeholder="Conte detalhes (opcional)"
                 />
-                {errors?.problemas && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).problemas.message}
-                  </p>
-                )}
               </div>
 
-              {/* Módulos e integrações */}
+              {/* Módulos (opcional) */}
               <div>
                 <label className="text-sm font-medium">
-                  Quais módulos têm mais interesse?
+                  Quais módulos têm mais interesse?{" "}
+                  <span className="text-zinc-500">(opcional)</span>
                 </label>
                 <div className="mt-2 grid md:grid-cols-2 gap-3">
                   {modulosOpts.map((m) => (
@@ -579,40 +476,29 @@ export default function Landing() {
                       key={m}
                       label={m}
                       selected={modulosSel}
-                      onToggle={(next) =>
-                        setValue("modulos", next, { shouldValidate: true })
-                      }
+                      onToggle={(next) => setValue("modulos", next)}
                     />
                   ))}
                 </div>
-                {errors?.modulos && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).modulos.message}
-                  </p>
-                )}
                 <input
                   {...register("integracoes")}
                   className="mt-3 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Integrações necessárias (ERP/contábil, etc.)"
+                  placeholder="Integrações necessárias (ERP/contábil, etc.) (opcional)"
                 />
               </div>
 
-              {/* Experiência anterior */}
+              {/* O que já tentou (opcional) */}
               <div>
                 <label className="text-sm font-medium">
-                  O que você já tentou e não funcionou?
+                  O que você já tentou e não funcionou?{" "}
+                  <span className="text-zinc-500">(opcional)</span>
                 </label>
                 <textarea
                   {...register("tentou")}
                   rows={4}
                   className="mt-1 w-full rounded-xl border px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Conte rapidamente sua experiência"
+                  placeholder="Conte rapidamente sua experiência (opcional)"
                 />
-                {errors?.tentou && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {(errors as any).tentou.message}
-                  </p>
-                )}
               </div>
 
               {/* Consentimento */}
