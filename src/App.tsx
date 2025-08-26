@@ -20,6 +20,8 @@ const DEMO_IMG_SRC =
   "https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=1470&auto=format&fit=crop";
 const DEMO_IMG_SRC_PROT = demoImg;
 
+const email_add = "contato@coophub.com";
+
 // ===== Schema (Zod) =====
 // -> deixe objetivos/problemas/modulos APENAS como .optional() (sem .default())
 // -> tentou também opcional
@@ -569,19 +571,9 @@ export default function Landing() {
               <li>
                 <a
                   className="hover:text-emerald-700"
-                  href="mailto:contato@coophub.app"
+                  href={`mailto:${email_add}`}
                 >
-                  contato@coophub.app
-                </a>
-              </li>
-              <li>
-                <a
-                  className="hover:text-emerald-700"
-                  href="https://wa.me/5500000000000"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  WhatsApp
+                  {email_add}
                 </a>
               </li>
               <li>
@@ -591,29 +583,6 @@ export default function Landing() {
               </li>
             </ul>
           </div>
-          <div className="text-sm">
-            <div className="font-medium">Links úteis</div>
-            <ul className="mt-2 space-y-1">
-              <li>
-                <a className="hover:text-emerald-700" href="#inscricao">
-                  Lista de espera
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-emerald-700" href="#lgpd">
-                  LGPD
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-emerald-700" href="#">
-                  Termos
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="py-6 text-center text-xs text-zinc-500">
-          © {new Date().getFullYear()} CoopHub. Todos os direitos reservados.
         </div>
 
         {/* LGPD */}
@@ -622,12 +591,12 @@ export default function Landing() {
             <h4 className="font-medium">Aviso de Privacidade (LGPD)</h4>
             <p>
               <strong>Controlador:</strong> CoopHub — contato:{" "}
-              <a href="mailto:contato@coophub.app" className="underline">
-                contato@coophub.app
+              <a href={`mailto:${email_add}`} className="underline">
+                {email_add}
               </a>
               . Encarregado (DPO):{" "}
-              <a href="mailto:dpo@coophub.app" className="underline">
-                dpo@coophub.app
+              <a href={`mailto:${email_add}`} className="underline">
+                {email_add}
               </a>
               .
             </p>
@@ -646,8 +615,8 @@ export default function Landing() {
               acesso, correção, portabilidade, anonimização/eliminação,
               informação sobre compartilhamento, revogação do consentimento e
               oposição. Para exercer, escreva para{" "}
-              <a href="mailto:dpo@coophub.app" className="underline">
-                dpo@coophub.app
+              <a href={`mailto:${email_add}`} className="underline">
+                {email_add}
               </a>
               .
             </p>
@@ -670,8 +639,8 @@ export default function Landing() {
             <p>
               <strong>Revogação de consentimento:</strong> você pode revogar a
               qualquer momento enviando um e-mail para{" "}
-              <a href="mailto:dpo@coophub.app" className="underline">
-                dpo@coophub.app
+              <a href={`mailto:${email_add}`} className="underline">
+                {email_add}
               </a>{" "}
               com o assunto “Revogar consentimento”.
             </p>
