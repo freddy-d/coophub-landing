@@ -13,7 +13,7 @@ import demoImg from "./prototipo.png";
 
 const SHEETS_WEBHOOK: string =
   (import.meta as any)?.env?.VITE_SHEETS_WEBHOOK ||
-  "https://script.google.com/macros/s/AKfycbzUc_25VvcxebarxCVmZdiYCZiTkErNqkqwT5glmVZ2kL3Eibj_S_LqZPYyyILNODU/exec";
+  "https://script.google.com/macros/s/AKfycbxlDD-xb3wyB6i9ArHEk9aA-ktTHPv0rxbEpJJeTyaQVwT8UuGgNNv1E2JXuBxkwLk/exec";
 
 const DEMO_LINK = "https://coophub-app-demo.vercel.app/";
 const DEMO_IMG_SRC =
@@ -185,8 +185,16 @@ export default function Landing() {
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
           },
           body: params.toString(),
+          redirect: "follow", // padrão, mas declaramos explícito
+          keepalive: true, // ajuda a concluir envios ao navegar/fechar
         });
-        if (!res.ok) throw new Error("Falha no webhook do Sheets");
+
+        // Em alguns navegadores o Apps Script responde 302 -> usercontent.com e a resposta final
+        // pode aparecer como 'opaque' ou 'redirected', mesmo com sucesso.
+        const opaque = res.type === "opaque";
+        if (!res.ok && !opaque && !res.redirected) {
+          throw new Error(`Falha no webhook (status ${res.status || 0})`);
+        }
       } else {
         console.log(
           "[DEBUG] Defina VITE_SHEETS_WEBHOOK para enviar ao Google Sheets.",
